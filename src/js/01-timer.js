@@ -17,6 +17,7 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
+    if (startBtn.dataset.start !== "started") {
       if (selectedDates[0] < options.defaultDate) {
         startBtn.setAttribute("disabled", "");
         iziToast.show({
@@ -26,9 +27,10 @@ const options = {
           position: "center"
         });
       } else {
-          startBtn.removeAttribute("disabled");
-          selectedDate = selectedDates[0];
-       }
+        startBtn.removeAttribute("disabled");
+        selectedDate = selectedDates[0];
+      }
+    }
   },
 };
 flatpickr("#datetime-picker", options);
@@ -51,6 +53,7 @@ startBtn.onclick = () => {
     const timer = setInterval(calcTimer, 1000);
     timerID = timer;
     startBtn.setAttribute("disabled", "");
+    startBtn.dataset.start = "started";
   } else { 
     iziToast.show({ // To prevent negative timer if slected time rich present time before button push
           message: "Please choose a date in the future",
