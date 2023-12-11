@@ -16,24 +16,22 @@ const options = {
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
-  onClose(selectedDates) {
-    if (startBtn.dataset.start !== "started") {
-      if (selectedDates[0] < options.defaultDate) {
-        startBtn.setAttribute("disabled", "");
-        iziToast.show({
-          message: "Please choose a date in the future",
-          backgroundColor: "rgb(236, 56, 56)",
-          messageColor: "#FFF",
-          position: "center"
-        });
-      } else {
-        startBtn.removeAttribute("disabled");
-        selectedDate = selectedDates[0];
-      }
+  onClose([selectedDates]) {
+    if (selectedDates < options.defaultDate) {
+      startBtn.setAttribute("disabled", "");
+      iziToast.show({
+        message: "Please choose a date in the future",
+        backgroundColor: "rgb(236, 56, 56)",
+        messageColor: "#FFF",
+        position: "center"
+      });
+    } else {
+      startBtn.removeAttribute("disabled");
+      selectedDate = selectedDates.getTime();
     }
   },
 };
-flatpickr("#datetime-picker", options);
+const dateInput = flatpickr("#datetime-picker", options);
 
 function convertMs(ms) {
   const second = 1000;
@@ -48,29 +46,34 @@ function convertMs(ms) {
 }
 let timerID;
 startBtn.onclick = () => {
-  if (selectedDate.getTime() > Date.now()) {
+  if (selectedDate > Date.now()) {
+    const calcTimer = () => {
+      outputsUpdate([dayOut, hourOut, minOut, secOut], convertMs(selectedDate - Date.now()));
+      if (((selectedDate - 1000) < Date.now()) && secOut.textContent == "00") clearInterval(timer);
+    }
     calcTimer();
     const timer = setInterval(calcTimer, 1000);
-    timerID = timer;
+    dateInput.input.setAttribute("disabled", ""); // Робить інпут disabled після запуску таймеру, щоб не можна було змінити значення таймера через календар після його запуску
     startBtn.setAttribute("disabled", "");
     startBtn.dataset.start = "started";
   } else { 
-    iziToast.show({ // To prevent negative timer if slected time rich present time before button push
-          message: "Please choose a date in the future",
-          backgroundColor: "rgb(236, 56, 56)",
-          messageColor: "#FFF",
-          position: "center"
+    iziToast.show({
+      message: "Please choose a date in the future",
+      backgroundColor: "rgb(236, 56, 56)",
+      messageColor: "#FFF",
+      position: "center"
     });
     startBtn.setAttribute("disabled", "");
   }
 }
 
-const calcTimer = () => {
-  const selDateMs = selectedDate.getTime();
-  const remain = convertMs(selDateMs - Date.now());
-  dayOut.textContent = remain.days.toString().padStart(2, "0");
-  hourOut.textContent = remain.hours.toString().padStart(2, "0");
-  minOut.textContent = remain.minutes.toString().padStart(2, "0");
-  secOut.textContent = remain.seconds.toString().padStart(2, "0");
-  if (((selDateMs - 1000) < Date.now()) && secOut.textContent == "00") clearInterval(timerID);
+
+const outputUpdate = (output, time) => {
+  output.textContent = time.toString().padStart(2, "0");
+}
+const outputsUpdate = ([dayOut, hourOut, minOut, secOut], { days, hours, minutes, seconds }) => {
+  outputUpdate(dayOut, days);
+  outputUpdate(hourOut, hours);
+  outputUpdate(minOut, minutes);
+  outputUpdate(secOut, seconds);
 }

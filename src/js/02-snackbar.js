@@ -2,8 +2,8 @@ import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
 
 const form = document.querySelector("form");
-const msInput = document.querySelector("input[name=delay]");
-const fullfieldRadio = document.querySelector("input[value=fulfilled]");
+const msInput = form.elements.delay;
+const fullfieldRadio = form.elements.state[0];
 
 form.addEventListener("submit", (evt) => {
     evt.preventDefault();
@@ -13,8 +13,10 @@ form.addEventListener("submit", (evt) => {
 function createPromise(delay) {
     if (delay > 0) {
         const promise = new Promise((res, rej) => {
-            if (fullfieldRadio.checked) setTimeout(() => { res(`✅ Fulfilled promise in ${delay}ms`) }, delay);
-            else setTimeout(() => { rej(`❌ Rejected promise in ${delay}ms`) }, delay);
+            setTimeout(() => {
+                if (fullfieldRadio.checked) res(`✅ Fulfilled promise in ${delay}ms`);
+                else rej(`❌ Rejected promise in ${delay}ms`);
+             }, delay);
         });
         promise
             .then(value => {
